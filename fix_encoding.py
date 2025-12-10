@@ -9,20 +9,42 @@ import os
 import shutil
 from pathlib import Path
 
+try:
+    from ftfy import fix_text
+except ImportError:
+    fix_text = None
+
+
+SUSPECT_TOKENS = ('Ã', 'Â', 'àÀ', 'áÀ', 'éÀ', 'íÀ', 'óÀ', 'úÀ')
+
 
 def fix_encoding(text):
     """
     Tenta corrigir texto com problemas de codificação.
-    Converte texto mal interpretado (UTF-8 lido como Latin-1) de volta ao correto.
+    - Se `ftfy` estiver disponível, faz uma correção completa do texto mojibake.
+    - Caso contrário, corrige apenas linhas com tokens suspeitos usando CP1252->UTF-8.
+    Retorna o texto corrigido e um booleano indicando se houve alteração.
     """
-    try:
-        # Tenta corrigir: encode como latin-1 (volta aos bytes originais)
-        # e decode como utf-8 (interpretação correta)
-        fixed_text = text.encode('latin-1').decode('utf-8')
-        return fixed_text
-    except (UnicodeDecodeError, UnicodeEncodeError):
-        # Se não conseguir corrigir, retorna o texto original
-        return text
+    if fix_text:
+        fixed = fix_text(text)
+        return fixed, fixed != text
+
+    fixed_lines = []
+    changed = False
+
+    for line in text.splitlines(keepends=True):
+        if any(token in line for token in SUSPECT_TOKENS):
+            try:
+                candidate = line.encode('cp1252').decode('utf-8')
+                if candidate != line:
+                    line = candidate
+                    changed = True
+            except (UnicodeDecodeError, UnicodeEncodeError):
+                # Se não conseguir, mantém a linha original
+                pass
+        fixed_lines.append(line)
+
+    return ''.join(fixed_lines), changed
 
 
 def process_file(file_path, backup_dir):
@@ -38,17 +60,22 @@ def process_file(file_path, backup_dir):
 
     # Lê o arquivo original
     try:
-        with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
-            content = f.read()
+        raw = file_path.read_bytes()
+        # Com ftfy, decodificamos em latin-1 para preservar bytes e recuperar UTF-8 correto.
+        # Sem ftfy, mantemos leitura padrão em UTF-8 (ignorando erros).
+        if fix_text:
+            content = raw.decode('latin-1')
+        else:
+            content = raw.decode('utf-8', errors='ignore')
     except Exception as e:
         print(f"  Erro ao ler arquivo: {e}")
         return False
 
     # Corrige a codificação
-    fixed_content = fix_encoding(content)
+    fixed_content, changed = fix_encoding(content)
 
     # Verifica se houve mudanças
-    if fixed_content == content:
+    if not changed:
         print(f"  Nenhuma correção necessária")
         return False
 
