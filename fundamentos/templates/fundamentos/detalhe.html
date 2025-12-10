@@ -1,0 +1,128 @@
+{% extends 'fundamentos/base.html' %}
+
+{% block title %}{{ fundamento.descricao|truncatechars:50 }} - STJ Fundamentos{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <!-- Breadcrumb -->
+    <nav class="text-sm text-gray-600 mb-4">
+        <ol class="flex flex-wrap items-center gap-2">
+            <li><a href="{% url 'fundamentos:index' %}" class="text-blue-600 hover:underline">Início</a></li>
+            {% for f in caminho %}
+            <li class="flex items-center gap-2">
+                <span class="text-gray-400">/</span>
+                {% if forloop.last %}
+                <span class="font-medium text-gray-900">{{ f.descricao|truncatechars:40 }}</span>
+                {% else %}
+                <a href="{% url 'fundamentos:detalhe' f.seq %}" class="text-blue-600 hover:underline">
+                    {{ f.descricao|truncatechars:40 }}
+                </a>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ol>
+    </nav>
+
+    <!-- Cabeçalho -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <div class="flex items-start justify-between mb-4">
+            <div>
+                <span class="text-sm text-gray-500 font-mono">SEQ: {{ fundamento.seq }}</span>
+                <h1 class="text-2xl font-bold text-gray-900 mt-1">{{ fundamento.descricao }}</h1>
+            </div>
+            <div class="flex gap-2">
+                <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                    {{ fundamento.get_tipo_recurso_display }}
+                </span>
+                <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                    {{ fundamento.get_categoria_display }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Atributos -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-gray-50 p-3 rounded">
+                <span class="text-xs text-gray-500">Selecionável</span>
+                <div class="font-medium {% if fundamento.selecionavel %}text-green-600{% else %}text-red-600{% endif %}">
+                    {% if fundamento.selecionavel %}Sim{% else %}Não{% endif %}
+                </div>
+            </div>
+            <div class="bg-gray-50 p-3 rounded">
+                <span class="text-xs text-gray-500">Neutro</span>
+                <div class="font-medium">{% if fundamento.neutro %}Sim{% else %}Não{% endif %}</div>
+            </div>
+            <div class="bg-gray-50 p-3 rounded">
+                <span class="text-xs text-gray-500">Informação</span>
+                <div class="font-medium">{% if fundamento.informacao %}Sim{% else %}Não{% endif %}</div>
+            </div>
+            <div class="bg-gray-50 p-3 rounded">
+                <span class="text-xs text-gray-500">Justificativa</span>
+                <div class="font-medium">{% if fundamento.justificativa %}Sim{% else %}Não{% endif %}</div>
+            </div>
+        </div>
+
+        <!-- Glossário -->
+        {% if fundamento.glossario %}
+        <div class="border-t pt-4">
+            <h3 class="text-lg font-semibold mb-2">📖 Glossário</h3>
+            <p class="text-gray-700 leading-relaxed">{{ fundamento.glossario }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Textos associados -->
+    {% if textos %}
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <h3 class="text-lg font-semibold mb-4">📄 Textos Associados</h3>
+        {% for texto in textos %}
+        <div class="border rounded-lg p-4 mb-4 last:mb-0">
+            {% if texto.legislacao %}
+            <div class="text-sm text-gray-500 mb-2">
+                <strong>Legislação:</strong> {{ texto.legislacao }}
+            </div>
+            {% endif %}
+            <div class="prose max-w-none">
+                {{ texto.texto_html|safe }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Fundamento pai -->
+    {% if fundamento.pai %}
+    <div class="bg-white rounded-lg shadow p-4 mb-6">
+        <h3 class="text-lg font-semibold mb-2">⬆️ Fundamento Pai</h3>
+        <a href="{% url 'fundamentos:detalhe' fundamento.pai.seq %}" 
+            class="block p-3 bg-gray-50 rounded hover:bg-gray-100 transition">
+            <span class="font-mono text-sm text-gray-500">{{ fundamento.pai.seq }}</span>
+            <span class="ml-2">{{ fundamento.pai.descricao }}</span>
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Filhos -->
+    {% if filhos %}
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h3 class="text-lg font-semibold mb-4">⬇️ Fundamentos Filhos ({{ filhos.count }})</h3>
+        <div class="space-y-2">
+            {% for filho in filhos %}
+            <a href="{% url 'fundamentos:detalhe' filho.seq %}" 
+                class="block p-3 bg-gray-50 rounded hover:bg-blue-50 hover:border-blue-200 border transition">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <span class="font-mono text-sm text-gray-500">{{ filho.seq }}</span>
+                        <span class="ml-2">{{ filho.descricao }}</span>
+                    </div>
+                    {% if filho.filhos.exists %}
+                    <span class="text-xs text-blue-600">+{{ filho.filhos.count }} filhos</span>
+                    {% endif %}
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

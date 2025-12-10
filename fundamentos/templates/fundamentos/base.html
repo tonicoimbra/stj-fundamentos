@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}STJ Fundamentos Legais{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <style>
+        [x-cloak] { display: none !important; }
+        .tree-item { transition: all 0.2s ease; }
+        .highlight { background-color: #fef3c7; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <nav class="bg-blue-800 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <a href="{% url 'fundamentos:index' %}" class="text-xl font-bold">
+                    ⚖️ STJ Fundamentos Legais
+                </a>
+                <div class="flex gap-4">
+                    <a href="{% url 'fundamentos:index' %}" class="hover:text-blue-200">Busca</a>
+                    <a href="{% url 'fundamentos:arvore' %}" class="hover:text-blue-200">Árvore</a>
+                    <a href="/api/fundamentos/" class="hover:text-blue-200">API</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-12 py-6">
+        <div class="max-w-7xl mx-auto px-4 text-center text-sm">
+            Sistema de Fundamentos Legais - Superior Tribunal de Justiça
+        </div>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

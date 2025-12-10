@@ -1,0 +1,119 @@
+{% extends 'fundamentos/base.html' %}
+
+{% block title %}Árvore - STJ Fundamentos Legais{% endblock %}
+
+{% block content %}
+<div x-data="arvoreApp()">
+    <!-- Filtros -->
+    <div class="bg-white rounded-lg shadow p-4 mb-6">
+        <div class="flex gap-4 items-center">
+            <label class="font-medium">Tipo de Recurso:</label>
+            <select @change="window.location.href = '?tipo=' + $event.target.value" 
+                class="border rounded px-4 py-2">
+                {% for t in tipos %}
+                <option value="{{ t.value }}" {% if t.value == tipo_atual %}selected{% endif %}>
+                    {{ t.label }}
+                </option>
+                {% endfor %}
+            </select>
+            
+            <button @click="expandirTodos" class="ml-auto px-4 py-2 bg-blue-100 text-blue-700 rounded hover:bg-blue-200">
+                Expandir Todos
+            </button>
+            <button @click="recolherTodos" class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200">
+                Recolher Todos
+            </button>
+        </div>
+    </div>
+
+    <!-- Árvore -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-xl font-semibold mb-4">🌳 Estrutura Hierárquica</h2>
+        
+        <div class="space-y-1">
+            {% for raiz in raizes %}
+            <div x-data="{ aberto: false, filhos: [], carregado: false }" class="tree-node">
+                <div class="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer"
+                    @click="toggle({{ raiz.seq }}, $data)">
+                    <button class="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-gray-700">
+                        <span x-show="!aberto">▶</span>
+                        <span x-show="aberto">▼</span>
+                    </button>
+                    <span class="font-mono text-sm text-gray-500">[{{ raiz.seq }}]</span>
+                    <span class="flex-1">{{ raiz.descricao }}</span>
+                    <a href="{% url 'fundamentos:detalhe' raiz.seq %}" 
+                        @click.stop
+                        class="text-blue-600 hover:underline text-sm">
+                        Detalhes
+                    </a>
+                </div>
+                
+                <!-- Filhos carregados dinamicamente -->
+                <div x-show="aberto" x-collapse class="ml-6 border-l-2 border-gray-200 pl-4">
+                    <template x-for="filho in filhos" :key="filho.seq">
+                        <div class="py-1">
+                            <div class="flex items-center gap-2 p-2 hover:bg-gray-50 rounded">
+                                <span x-show="filho.tem_filhos" class="w-6 h-6 flex items-center justify-center text-gray-400">
+                                    ▷
+                                </span>
+                                <span x-show="!filho.tem_filhos" class="w-6 h-6"></span>
+                                <span class="font-mono text-sm text-gray-500" x-text="'[' + filho.seq + ']'"></span>
+                                <span class="flex-1" x-text="filho.descricao"></span>
+                                <a :href="'/detalhe/' + filho.seq + '/'" 
+                                    class="text-blue-600 hover:underline text-sm">
+                                    Detalhes
+                                </a>
+                            </div>
+                        </div>
+                    </template>
+                    <div x-show="filhos.length === 0 && carregado" class="text-gray-500 text-sm p-2">
+                        Nenhum filho encontrado
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function arvoreApp() {
+    return {
+        async toggle(seq, data) {
+            data.aberto = !data.aberto;
+            
+            if (data.aberto && !data.carregado) {
+                try {
+                    const response = await fetch('/api/filhos/' + seq + '/');
+                    data.filhos = await response.json();
+                    data.carregado = true;
+                } catch (error) {
+                    console.error('Erro ao carregar filhos:', error);
+                }
+            }
+        },
+
+        expandirTodos() {
+            document.querySelectorAll('.tree-node').forEach(node => {
+                const alpineData = Alpine.$data(node.querySelector('[x-data]'));
+                if (alpineData) {
+                    alpineData.aberto = true;
+                    this.toggle(node.querySelector('[x-data]').__x.$data);
+                }
+            });
+        },
+
+        recolherTodos() {
+            document.querySelectorAll('.tree-node').forEach(node => {
+                const alpineData = Alpine.$data(node.querySelector('[x-data]'));
+                if (alpineData) {
+                    alpineData.aberto = false;
+                }
+            });
+        }
+    }
+}
+</script>
+{% endblock %}
