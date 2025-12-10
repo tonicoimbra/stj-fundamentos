@@ -3,132 +3,277 @@
 {% block title %}Busca - STJ Fundamentos Legais{% endblock %}
 
 {% block content %}
-<div x-data="buscaApp()" x-cloak>
+<div x-data="buscaApp()" x-cloak class="space-y-6">
+    <div class="bg-gradient-to-r from-blue-900 via-blue-700 to-blue-600 text-white rounded-2xl shadow-lg p-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <p class="text-sm uppercase tracking-wide text-blue-100">Fluxo rápido</p>
+                <h1 class="text-2xl font-bold">Veja o fundamento sem abrir outra página</h1>
+                <p class="text-blue-100 text-sm mt-1">Busque, pré-visualize e navegue pelos filhos em uma só tela.</p>
+            </div>
+            <div class="flex flex-wrap gap-2 text-sm">
+                <span class="bg-white/15 border border-white/20 px-3 py-1 rounded-full">Auto-busca enquanto digita</span>
+                <span class="bg-white/15 border border-white/20 px-3 py-1 rounded-full">Clique no resultado para pré-visualizar</span>
+                <span class="bg-white/15 border border-white/20 px-3 py-1 rounded-full">Filhos abrindo no painel lateral</span>
+            </div>
+        </div>
+    </div>
+
     <!-- Estatísticas -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div class="bg-white rounded-lg shadow p-4 text-center">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-white rounded-lg shadow p-4 text-center border border-blue-50">
             <div class="text-3xl font-bold text-blue-600">{{ stats.total }}</div>
             <div class="text-gray-600 text-sm">Total de Fundamentos</div>
         </div>
         {% for tipo, count in stats.tipos.items %}
-        <div class="bg-white rounded-lg shadow p-4 text-center">
+        <div class="bg-white rounded-lg shadow p-4 text-center border border-blue-50">
             <div class="text-2xl font-bold text-green-600">{{ count }}</div>
             <div class="text-gray-600 text-sm">{{ tipo }}</div>
         </div>
         {% endfor %}
     </div>
 
-    <!-- Formulário de busca -->
-    <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
-        <h2 class="text-xl font-semibold mb-4">🔍 Buscar Fundamentos</h2>
-        
-        <div class="grid md:grid-cols-4 gap-4 mb-4">
-            <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Termo de busca</label>
-                <input type="text" x-model="termo" @keyup.enter="buscar"
-                    class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Digite para buscar...">
-            </div>
-            
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Recurso</label>
-                <select x-model="tipo" class="w-full border rounded-lg px-4 py-2">
-                    <option value="">Todos</option>
-                    {% for t in tipos %}
-                    <option value="{{ t.value }}">{{ t.label }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
-                <select x-model="categoria" class="w-full border rounded-lg px-4 py-2">
-                    <option value="">Todas</option>
-                    {% for c in categorias %}
-                    <option value="{{ c.value }}">{{ c.label }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-        </div>
-
-        <div class="flex gap-4">
-            <button @click="buscar" 
-                class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
-                Buscar
-            </button>
-            <button @click="limpar" 
-                class="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition">
-                Limpar
-            </button>
-        </div>
-    </div>
-
-    <!-- Resultados -->
-    <div x-show="loading" class="text-center py-8">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-        <p class="mt-4 text-gray-600">Buscando...</p>
-    </div>
-
-    <div x-show="resultados.length > 0 && !loading">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-semibold">
-                <span x-text="totalResultados"></span> resultados encontrados
-            </h3>
-        </div>
-
-        <div class="bg-white rounded-lg shadow overflow-hidden">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Seq</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descrição</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Categoria</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ações</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    <template x-for="item in resultados" :key="item.seq">
-                        <tr class="hover:bg-gray-50 tree-item">
-                            <td class="px-4 py-3 text-sm font-mono" x-text="item.seq"></td>
-                            <td class="px-4 py-3 text-sm" x-text="item.descricao"></td>
-                            <td class="px-4 py-3 text-sm">
-                                <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs" 
-                                    x-text="item.tipo_recurso"></span>
-                            </td>
-                            <td class="px-4 py-3 text-sm">
-                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs" 
-                                    x-text="item.categoria"></span>
-                            </td>
-                            <td class="px-4 py-3 text-sm">
-                                <a :href="'/detalhe/' + item.seq + '/'" 
-                                    class="text-blue-600 hover:underline">Ver detalhes</a>
-                            </td>
-                        </tr>
+    <div class="grid lg:grid-cols-3 gap-6 items-start">
+        <div class="lg:col-span-2 space-y-4">
+            <!-- Formulário de busca -->
+            <div class="bg-white rounded-xl shadow p-6 border border-blue-50">
+                <div class="flex items-start justify-between gap-4 mb-4">
+                    <div>
+                        <h2 class="text-xl font-semibold">Buscar fundamentos sem sair da página</h2>
+                        <p class="text-gray-500 text-sm">Resultados atualizam conforme você digita; clique para abrir a pré-visualização ao lado.</p>
+                    </div>
+                    <template x-if="feedback">
+                        <span class="bg-green-50 text-green-800 px-3 py-1 rounded-full text-xs" x-text="feedback"></span>
                     </template>
-                </tbody>
-            </table>
+                </div>
+
+                <form @submit.prevent="buscar()" class="space-y-4">
+                    <div class="grid md:grid-cols-4 gap-4">
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Termo de busca</label>
+                            <div class="relative">
+                                <input type="text" x-model="termo" @input="debounceBuscar" @keyup.enter.prevent="buscar()"
+                                    class="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    placeholder="Digite para buscar...">
+                                <span class="absolute right-3 top-2 text-xs text-gray-400">auto</span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Recurso</label>
+                            <select x-model="tipo" @change="buscar()" class="w-full border rounded-lg px-4 py-2">
+                                <option value="">Todos</option>
+                                {% for t in tipos %}
+                                <option value="{{ t.value }}">{{ t.label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
+                            <select x-model="categoria" @change="buscar()" class="w-full border rounded-lg px-4 py-2">
+                                <option value="">Todas</option>
+                                {% for c in categorias %}
+                                <option value="{{ c.value }}">{{ c.label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-3">
+                        <button type="submit"
+                            class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-60"
+                            :disabled="loading">
+                            Buscar
+                        </button>
+                        <button type="button" @click="limpar" 
+                            class="bg-gray-100 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-200 transition">
+                            Limpar
+                        </button>
+                        <span class="text-sm text-gray-500">Mínimo 2 letras ou escolha um filtro para iniciar.</span>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Resultados + lista clicável -->
+            <div class="bg-white rounded-xl shadow border border-gray-100">
+                <div class="flex items-center justify-between p-4 border-b">
+                    <div>
+                        <p class="text-xs uppercase text-gray-500">Resultados</p>
+                        <h3 class="text-lg font-semibold"><span x-text="totalResultados"></span> encontrados</h3>
+                        <p class="text-xs text-gray-500" x-show="buscaRealizada && !loading">Clique em um item para pré-visualizar à direita.</p>
+                    </div>
+                    <div class="flex items-center gap-3 text-sm text-gray-500">
+                        <div x-show="loading" class="flex items-center gap-2">
+                            <span class="h-3 w-3 rounded-full border-2 border-blue-200 border-t-blue-700 animate-spin"></span>
+                            Buscando...
+                        </div>
+                        <div x-show="!loading && totalPaginas > 1" class="px-3 py-1 bg-gray-100 rounded-full">
+                            Página <span x-text="pagina"></span> / <span x-text="totalPaginas"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div x-show="resultados.length" class="divide-y divide-gray-100">
+                    <template x-for="item in resultados" :key="item.seq">
+                        <button type="button" @click="selecionar(item.seq)" 
+                            :class="{'bg-blue-50 border-l-4 border-blue-500': selecionado === item.seq}"
+                            class="w-full text-left p-4 hover:bg-blue-50 transition">
+                            <div class="flex items-start justify-between gap-4">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 text-xs text-gray-500 mb-1">
+                                        <span class="font-mono" x-text="'SEQ ' + item.seq"></span>
+                                        <span x-show="item.selecionavel" class="px-2 py-0.5 bg-green-100 text-green-800 rounded-full">Selecionável</span>
+                                        <span x-show="item.tem_filhos" class="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full">Possui filhos</span>
+                                    </div>
+                                    <div class="text-gray-900 font-medium" x-text="item.descricao"></div>
+                                </div>
+                                <div class="flex flex-col items-end gap-2 text-xs">
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded" x-text="tipoLabel(item.tipo_recurso)"></span>
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded" x-text="categoriaLabel(item.categoria)"></span>
+                                    <a :href="'/detalhe/' + item.seq + '/'" 
+                                        @click.stop
+                                        class="text-blue-600 hover:underline">Abrir página</a>
+                                </div>
+                            </div>
+                        </button>
+                    </template>
+                </div>
+
+                <div x-show="buscaRealizada && resultados.length === 0 && !loading" 
+                    class="text-center py-10 text-gray-500">
+                    Nenhum resultado encontrado. Ajuste os filtros ou refine o termo.
+                </div>
+
+                <div class="p-4 flex justify-center gap-2 items-center" x-show="totalPaginas > 1">
+                    <button @click="paginaAnterior" :disabled="pagina === 1"
+                        class="px-4 py-2 bg-gray-100 rounded disabled:opacity-50 hover:bg-gray-200">Anterior</button>
+                    <span class="px-4 py-2 text-sm text-gray-600">Página <span x-text="pagina"></span> de <span x-text="totalPaginas"></span></span>
+                    <button @click="proximaPagina" :disabled="pagina >= totalPaginas"
+                        class="px-4 py-2 bg-gray-100 rounded disabled:opacity-50 hover:bg-gray-200">Próxima</button>
+                </div>
+            </div>
         </div>
 
-        <!-- Paginação -->
-        <div class="mt-4 flex justify-center gap-2" x-show="totalPaginas > 1">
-            <button @click="paginaAnterior" :disabled="pagina === 1"
-                class="px-4 py-2 bg-gray-200 rounded disabled:opacity-50">Anterior</button>
-            <span class="px-4 py-2">Página <span x-text="pagina"></span> de <span x-text="totalPaginas"></span></span>
-            <button @click="proximaPagina" :disabled="pagina >= totalPaginas"
-                class="px-4 py-2 bg-gray-200 rounded disabled:opacity-50">Próxima</button>
-        </div>
-    </div>
+        <!-- Painel lateral de detalhe -->
+        <div id="painel-detalhe" class="bg-white rounded-xl shadow-lg border border-blue-50 p-5 sticky top-6">
+            <div x-show="detalheCarregando" class="space-y-3 animate-pulse">
+                <div class="h-5 bg-gray-200 rounded w-3/4"></div>
+                <div class="h-4 bg-gray-200 rounded w-full"></div>
+                <div class="h-4 bg-gray-200 rounded w-5/6"></div>
+            </div>
 
-    <div x-show="buscaRealizada && resultados.length === 0 && !loading" 
-        class="text-center py-8 text-gray-500">
-        Nenhum resultado encontrado para sua busca.
+            <template x-if="!detalhe && !detalheCarregando">
+                <div class="text-gray-500 text-sm">
+                    Selecione um resultado para visualizar aqui. O painel mantém o contexto enquanto você navega.
+                </div>
+            </template>
+
+            <template x-if="detalhe">
+                <div>
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="text-xs text-gray-500 font-mono" x-text="'SEQ ' + detalhe.seq"></p>
+                            <h3 class="text-xl font-semibold text-gray-900" x-text="detalhe.descricao"></h3>
+                            <div class="flex flex-wrap gap-2 mt-2 text-xs">
+                                <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded" x-text="tipoLabel(detalhe.tipo_recurso)"></span>
+                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded" x-text="categoriaLabel(detalhe.categoria)"></span>
+                                <span class="px-2 py-1 bg-gray-100 text-gray-700 rounded" x-text="'Nível ' + (detalhe.nivel || '-')"></span>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-end gap-2 text-sm">
+                            <a :href="'/detalhe/' + detalhe.seq + '/'" class="text-blue-600 hover:underline">Abrir página</a>
+                            <button @click="copiarLink(detalhe.seq)" class="text-gray-500 hover:text-gray-700 text-xs">Copiar link</button>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 space-y-3">
+                        <div class="bg-gray-50 rounded p-3">
+                            <p class="text-xs text-gray-500 mb-1">Glossário</p>
+                            <p class="text-gray-800 text-sm leading-relaxed" x-text="detalhe.glossario || 'Sem glossário cadastrado.'"></p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 text-sm">
+                            <div class="p-2 bg-gray-50 rounded">
+                                <p class="text-gray-500 text-xs">Selecionável</p>
+                                <p class="font-medium" x-text="detalhe.selecionavel ? 'Sim' : 'Não'"></p>
+                            </div>
+                            <div class="p-2 bg-gray-50 rounded">
+                                <p class="text-gray-500 text-xs">Neutro</p>
+                                <p class="font-medium" x-text="detalhe.neutro ? 'Sim' : 'Não'"></p>
+                            </div>
+                            <div class="p-2 bg-gray-50 rounded">
+                                <p class="text-gray-500 text-xs">Informação</p>
+                                <p class="font-medium" x-text="detalhe.informacao ? 'Sim' : 'Não'"></p>
+                            </div>
+                            <div class="p-2 bg-gray-50 rounded">
+                                <p class="text-gray-500 text-xs">Justificativa</p>
+                                <p class="font-medium" x-text="detalhe.justificativa ? 'Sim' : 'Não'"></p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2" x-show="detalhe.caminho && detalhe.caminho.length">
+                            <p class="text-sm font-semibold text-gray-800">Caminho</p>
+                            <div class="flex flex-wrap gap-2">
+                                <template x-for="no in detalhe.caminho" :key="no.seq">
+                                    <button @click="selecionar(no.seq)" class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs hover:bg-blue-100">
+                                        <span class="font-mono" x-text="no.seq"></span> · <span x-text="no.descricao"></span>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2" x-show="detalhe.filhos && detalhe.filhos.length">
+                            <div class="flex items-center justify-between">
+                                <p class="text-sm font-semibold text-gray-800">Filhos (clique para abrir aqui)</p>
+                                <span class="text-xs text-gray-500" x-text="detalhe.filhos.length + ' itens'"></span>
+                            </div>
+                            <div class="space-y-2 max-h-64 overflow-y-auto pr-1">
+                                <template x-for="filho in detalhe.filhos" :key="filho.seq">
+                                    <button @click="selecionar(filho.seq)" class="w-full text-left p-3 border rounded hover:bg-blue-50 transition">
+                                        <div class="flex items-start justify-between gap-2">
+                                            <div>
+                                                <p class="font-mono text-xs text-gray-500" x-text="'SEQ ' + filho.seq"></p>
+                                                <p class="text-sm text-gray-800" x-text="filho.descricao"></p>
+                                            </div>
+                                            <span class="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded" x-show="filho.tem_filhos">+ filhos</span>
+                                        </div>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3" x-show="detalhe.textos && detalhe.textos.length">
+                            <p class="text-sm font-semibold text-gray-800">Textos associados</p>
+                            <template x-for="texto in detalhe.textos" :key="texto.id">
+                                <div class="border rounded p-3">
+                                    <p class="text-xs text-gray-500 mb-1" x-text="texto.legislacao || 'Trecho'"></p>
+                                    <div class="text-sm text-gray-800 leading-relaxed" x-html="texto.texto_html"></div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
+const TIPOS_MAP = {
+    {% for t in tipos %}
+    "{{ t.value }}": "{{ t.label }}"{% if not forloop.last %},{% endif %}
+    {% endfor %}
+};
+
+const CATEGORIAS_MAP = {
+    {% for c in categorias %}
+    "{{ c.value }}": "{{ c.label }}"{% if not forloop.last %},{% endif %}
+    {% endfor %}
+};
+
 function buscaApp() {
     return {
         termo: '',
@@ -140,36 +285,59 @@ function buscaApp() {
         pagina: 1,
         totalResultados: 0,
         totalPaginas: 1,
+        detalhe: null,
+        detalheCarregando: false,
+        selecionado: null,
+        feedback: '',
+        debounceTimer: null,
+        tiposMap: TIPOS_MAP,
+        categoriasMap: CATEGORIAS_MAP,
 
-        async buscar() {
+        async buscar(autoSelect = true) {
             if (this.termo.length < 2 && !this.tipo && !this.categoria) {
-                alert('Digite pelo menos 2 caracteres ou selecione um filtro');
+                this.resultados = [];
+                this.totalResultados = 0;
+                this.totalPaginas = 1;
+                this.buscaRealizada = false;
+                this.detalhe = null;
+                this.selecionado = null;
                 return;
             }
             
             this.loading = true;
             this.buscaRealizada = true;
             
-            let url = '/api/fundamentos/';
             const params = new URLSearchParams();
-            
             if (this.termo) params.append('search', this.termo);
             if (this.tipo) params.append('tipo', this.tipo);
             if (this.categoria) params.append('categoria', this.categoria);
             params.append('page', this.pagina);
             
             try {
-                const response = await fetch(url + '?' + params.toString());
+                const response = await fetch('/api/fundamentos/?' + params.toString());
                 const data = await response.json();
                 
                 this.resultados = data.results || data;
                 this.totalResultados = data.count || this.resultados.length;
-                this.totalPaginas = Math.ceil(this.totalResultados / 50);
+                const pageSize = data.results ? data.results.length : (this.resultados.length || 1);
+                this.totalPaginas = data.count ? Math.ceil(data.count / pageSize) : 1;
+
+                if (autoSelect && this.resultados.length) {
+                    const primeiraSeq = this.resultados[0].seq;
+                    if (!this.detalhe || this.detalhe.seq !== primeiraSeq) {
+                        this.selecionar(primeiraSeq, false);
+                    }
+                }
             } catch (error) {
                 console.error('Erro na busca:', error);
             }
             
             this.loading = false;
+        },
+
+        debounceBuscar() {
+            clearTimeout(this.debounceTimer);
+            this.debounceTimer = setTimeout(() => this.buscar(), 400);
         },
 
         limpar() {
@@ -179,6 +347,10 @@ function buscaApp() {
             this.resultados = [];
             this.buscaRealizada = false;
             this.pagina = 1;
+            this.totalResultados = 0;
+            this.totalPaginas = 1;
+            this.detalhe = null;
+            this.selecionado = null;
         },
 
         async paginaAnterior() {
@@ -192,6 +364,46 @@ function buscaApp() {
             if (this.pagina < this.totalPaginas) {
                 this.pagina++;
                 await this.buscar();
+            }
+        },
+
+        async selecionar(seq, scroll = true) {
+            this.selecionado = seq;
+            this.detalheCarregando = true;
+            try {
+                const response = await fetch('/api/fundamentos/' + seq + '/');
+                this.detalhe = await response.json();
+            } catch (error) {
+                console.error('Erro ao carregar detalhe:', error);
+            }
+            this.detalheCarregando = false;
+
+            if (scroll) {
+                const painel = document.getElementById('painel-detalhe');
+                if (painel) {
+                    painel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        },
+
+        tipoLabel(valor) {
+            return this.tiposMap[valor] || valor;
+        },
+
+        categoriaLabel(valor) {
+            return this.categoriasMap[valor] || valor;
+        },
+
+        async copiarLink(seq) {
+            const link = `${window.location.origin}/detalhe/${seq}/`;
+            try {
+                await navigator.clipboard.writeText(link);
+                this.feedback = 'Link copiado';
+                setTimeout(() => this.feedback = '', 2000);
+            } catch (error) {
+                console.warn('Clipboard indisponível', error);
+                this.feedback = 'Link: ' + link;
+                setTimeout(() => this.feedback = '', 3000);
             }
         }
     }
