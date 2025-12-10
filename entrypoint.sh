@@ -13,6 +13,17 @@ if [ "$DB_ENGINE" = "postgresql" ]; then
     done
 
     echo "✅ PostgreSQL is ready!"
+
+    # Ensure target database exists (use postgres database for the check)
+    export PGPASSWORD="${DB_PASSWORD}"
+    echo "🗄️  Ensuring database \"$DB_NAME\" exists..."
+    DB_EXISTS=$(psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='${DB_NAME}'")
+    if [ "$DB_EXISTS" != "1" ]; then
+        psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d postgres -c "CREATE DATABASE \"$DB_NAME\""
+        echo "✅ Database \"$DB_NAME\" created"
+    else
+        echo "ℹ️  Database \"$DB_NAME\" already exists"
+    fi
 fi
 
 # Run migrations
