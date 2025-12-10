@@ -139,3 +139,4 @@ O sistema contém **973 fundamentos legais** distribuídos em:
 - AFIPO_RESP: 261 fundamentos
 - AFIPO_RMS: 152 fundamentos
 - AFIREQ: 167 fundamentos
+# stj-fundamentos
