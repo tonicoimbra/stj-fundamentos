@@ -32,8 +32,8 @@ class Command(BaseCommand):
         # Mapeamento de arquivos para tipos de recurso
         arquivos = {
             'AFIRE': 'AFIRE_202505141514.csv',
-            'AFIPO_RESP': 'AFIPO_REsp_e_AREsp_202505141515.csv',
-            'AFIPO_RMS': 'AFIPO_RMS_202505141515.csv',
+            'AFIPO_RESP': 'AFIPO_(REsp_e AREsp)_202505141515.csv',
+            'AFIPO_RMS': 'AFIPO_(RMS)_202505141515.csv',
             'AFIREQ': 'AFIREQ_202505141516.csv',
         }
 

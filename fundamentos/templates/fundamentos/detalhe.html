@@ -3,18 +3,33 @@
 {% block title %}{{ fundamento.descricao|truncatechars:50 }} - STJ Fundamentos{% endblock %}
 
 {% block content %}
-<div class="mb-6">
-    <!-- Breadcrumb -->
-    <nav class="text-sm text-gray-600 mb-4">
-        <ol class="flex flex-wrap items-center gap-2">
-            <li><a href="{% url 'fundamentos:index' %}" class="text-blue-600 hover:underline">Início</a></li>
+<div x-data="detalheApp()" x-cloak class="space-y-6">
+    <!-- Breadcrumb navigation -->
+    <nav aria-label="Breadcrumb" class="bg-white rounded-lg shadow p-4 border border-gray-100">
+        <ol class="flex flex-wrap items-center gap-2 text-sm">
+            <li>
+                <a href="{% url 'fundamentos:index' %}"
+                    class="text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 transition"
+                    aria-label="Voltar para busca">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                    Início
+                </a>
+            </li>
             {% for f in caminho %}
             <li class="flex items-center gap-2">
-                <span class="text-gray-400">/</span>
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
                 {% if forloop.last %}
-                <span class="font-medium text-gray-900">{{ f.descricao|truncatechars:40 }}</span>
+                <span class="font-medium text-gray-900" aria-current="page">
+                    {{ f.descricao|truncatechars:40 }}
+                </span>
                 {% else %}
-                <a href="{% url 'fundamentos:detalhe' f.seq %}" class="text-blue-600 hover:underline">
+                <a href="{% url 'fundamentos:detalhe' f.seq %}"
+                    class="text-blue-600 hover:text-blue-800 hover:underline transition"
+                    title="{{ f.descricao }}">
                     {{ f.descricao|truncatechars:40 }}
                 </a>
                 {% endif %}
@@ -23,106 +38,387 @@
         </ol>
     </nav>
 
-    <!-- Cabeçalho -->
-    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-        <div class="flex items-start justify-between mb-4">
-            <div>
-                <span class="text-sm text-gray-500 font-mono">SEQ: {{ fundamento.seq }}</span>
-                <h1 class="text-2xl font-bold text-gray-900 mt-1">{{ fundamento.descricao }}</h1>
-            </div>
-            <div class="flex gap-2">
-                <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                    {{ fundamento.get_tipo_recurso_display }}
-                </span>
-                <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                    {{ fundamento.get_categoria_display }}
-                </span>
-            </div>
-        </div>
-
-        <!-- Atributos -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-gray-50 p-3 rounded">
-                <span class="text-xs text-gray-500">Selecionável</span>
-                <div class="font-medium {% if fundamento.selecionavel %}text-green-600{% else %}text-red-600{% endif %}">
-                    {% if fundamento.selecionavel %}Sim{% else %}Não{% endif %}
+    <!-- Main content -->
+    <div class="grid lg:grid-cols-3 gap-6">
+        <!-- Primary content -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Header card -->
+            <div class="bg-white rounded-xl shadow-lg p-6 md:p-8 border border-gray-100">
+                <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="text-sm text-gray-500 font-mono bg-gray-100 px-3 py-1 rounded">
+                                SEQ: {{ fundamento.seq }}
+                            </span>
+                            <button @click="copiarSEQ"
+                                class="text-gray-400 hover:text-gray-600 p-1 hover:bg-gray-100 rounded transition"
+                                aria-label="Copiar SEQ"
+                                data-tooltip="Copiar SEQ">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <h1 class="text-2xl md:text-3xl font-bold text-gray-900 leading-tight">
+                            {{ fundamento.descricao }}
+                        </h1>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-3 py-2 bg-blue-100 text-blue-800 rounded-lg text-sm font-medium flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                            </svg>
+                            {{ fundamento.get_tipo_recurso_display }}
+                        </span>
+                        <span class="px-3 py-2 bg-green-100 text-green-800 rounded-lg text-sm font-medium flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                            </svg>
+                            {{ fundamento.get_categoria_display }}
+                        </span>
+                    </div>
                 </div>
-            </div>
-            <div class="bg-gray-50 p-3 rounded">
-                <span class="text-xs text-gray-500">Neutro</span>
-                <div class="font-medium">{% if fundamento.neutro %}Sim{% else %}Não{% endif %}</div>
-            </div>
-            <div class="bg-gray-50 p-3 rounded">
-                <span class="text-xs text-gray-500">Informação</span>
-                <div class="font-medium">{% if fundamento.informacao %}Sim{% else %}Não{% endif %}</div>
-            </div>
-            <div class="bg-gray-50 p-3 rounded">
-                <span class="text-xs text-gray-500">Justificativa</span>
-                <div class="font-medium">{% if fundamento.justificativa %}Sim{% else %}Não{% endif %}</div>
-            </div>
-        </div>
 
-        <!-- Glossário -->
-        {% if fundamento.glossario %}
-        <div class="border-t pt-4">
-            <h3 class="text-lg font-semibold mb-2">📖 Glossário</h3>
-            <p class="text-gray-700 leading-relaxed">{{ fundamento.glossario }}</p>
-        </div>
-        {% endif %}
-    </div>
+                <!-- Action buttons -->
+                <div class="flex flex-wrap gap-3 mb-6 pb-6 border-b">
+                    <button @click="copiarLink"
+                        class="flex-1 md:flex-none px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-2 touch-manipulation">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                        Copiar Link
+                    </button>
+                    <button @click="exportarJSON"
+                        class="flex-1 md:flex-none px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition flex items-center justify-center gap-2 touch-manipulation">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        Exportar JSON
+                    </button>
+                    <button @click="imprimir"
+                        class="flex-1 md:flex-none px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition flex items-center justify-center gap-2 touch-manipulation">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                        </svg>
+                        Imprimir
+                    </button>
+                </div>
 
-    <!-- Textos associados -->
-    {% if textos %}
-    <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-        <h3 class="text-lg font-semibold mb-4">📄 Textos Associados</h3>
-        {% for texto in textos %}
-        <div class="border rounded-lg p-4 mb-4 last:mb-0">
-            {% if texto.legislacao %}
-            <div class="text-sm text-gray-500 mb-2">
-                <strong>Legislação:</strong> {{ texto.legislacao }}
+                <!-- Feedback message -->
+                <div x-show="feedback"
+                    x-transition
+                    class="mb-6 p-3 bg-green-50 border border-green-200 text-green-800 rounded-lg flex items-center gap-2"
+                    role="status"
+                    aria-live="polite">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <span x-text="feedback"></span>
+                </div>
+
+                <!-- Attributes grid -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <div class="flex items-center gap-2 mb-2">
+                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span class="text-xs text-gray-500 font-medium">Selecionável</span>
+                        </div>
+                        <div class="font-semibold {% if fundamento.selecionavel %}text-green-600{% else %}text-gray-600{% endif %}">
+                            {% if fundamento.selecionavel %}Sim{% else %}Não{% endif %}
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <div class="flex items-center gap-2 mb-2">
+                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                            </svg>
+                            <span class="text-xs text-gray-500 font-medium">Neutro</span>
+                        </div>
+                        <div class="font-semibold text-gray-800">
+                            {% if fundamento.neutro %}Sim{% else %}Não{% endif %}
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <div class="flex items-center gap-2 mb-2">
+                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span class="text-xs text-gray-500 font-medium">Informação</span>
+                        </div>
+                        <div class="font-semibold text-gray-800">
+                            {% if fundamento.informacao %}Sim{% else %}Não{% endif %}
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <div class="flex items-center gap-2 mb-2">
+                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <span class="text-xs text-gray-500 font-medium">Justificativa</span>
+                        </div>
+                        <div class="font-semibold text-gray-800">
+                            {% if fundamento.justificativa %}Sim{% else %}Não{% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Glossary -->
+                {% if fundamento.glossario %}
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-6 h-6 text-blue-600 shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold text-blue-900 mb-2">Glossário</h3>
+                            <p class="text-gray-800 leading-relaxed">{{ fundamento.glossario }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Associated texts -->
+            {% if textos %}
+            <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h3 class="text-xl font-semibold mb-4 flex items-center gap-2">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Textos Associados
+                </h3>
+                <div class="space-y-4">
+                    {% for texto in textos %}
+                    <div class="border border-gray-200 rounded-lg p-5 hover:border-blue-300 transition">
+                        {% if texto.legislacao %}
+                        <div class="flex items-center gap-2 mb-3">
+                            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                            </svg>
+                            <strong class="text-sm font-medium text-gray-700">Legislação:</strong>
+                            <span class="text-sm text-gray-600">{{ texto.legislacao }}</span>
+                        </div>
+                        {% endif %}
+                        <div class="prose prose-sm max-w-none text-gray-800 leading-relaxed">
+                            {{ texto.texto_html|safe }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
             {% endif %}
-            <div class="prose max-w-none">
-                {{ texto.texto_html|safe }}
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
 
-    <!-- Fundamento pai -->
-    {% if fundamento.pai %}
-    <div class="bg-white rounded-lg shadow p-4 mb-6">
-        <h3 class="text-lg font-semibold mb-2">⬆️ Fundamento Pai</h3>
-        <a href="{% url 'fundamentos:detalhe' fundamento.pai.seq %}" 
-            class="block p-3 bg-gray-50 rounded hover:bg-gray-100 transition">
-            <span class="font-mono text-sm text-gray-500">{{ fundamento.pai.seq }}</span>
-            <span class="ml-2">{{ fundamento.pai.descricao }}</span>
-        </a>
-    </div>
-    {% endif %}
-
-    <!-- Filhos -->
-    {% if filhos %}
-    <div class="bg-white rounded-lg shadow-lg p-6">
-        <h3 class="text-lg font-semibold mb-4">⬇️ Fundamentos Filhos ({{ filhos.count }})</h3>
-        <div class="space-y-2">
-            {% for filho in filhos %}
-            <a href="{% url 'fundamentos:detalhe' filho.seq %}" 
-                class="block p-3 bg-gray-50 rounded hover:bg-blue-50 hover:border-blue-200 border transition">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <span class="font-mono text-sm text-gray-500">{{ filho.seq }}</span>
-                        <span class="ml-2">{{ filho.descricao }}</span>
+            <!-- Parent fundamento -->
+            {% if fundamento.pai %}
+            <div class="bg-white rounded-xl shadow p-5 border border-gray-100">
+                <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+                    </svg>
+                    Fundamento Pai
+                </h3>
+                <a href="{% url 'fundamentos:detalhe' fundamento.pai.seq %}"
+                    class="block p-4 bg-gray-50 rounded-lg hover:bg-blue-50 hover:border-blue-300 border border-gray-200 transition group">
+                    <div class="flex items-start justify-between gap-4">
+                        <div>
+                            <span class="font-mono text-xs text-gray-500 bg-white px-2 py-1 rounded">
+                                {{ fundamento.pai.seq }}
+                            </span>
+                            <p class="mt-2 font-medium text-gray-900 group-hover:text-blue-700">
+                                {{ fundamento.pai.descricao }}
+                            </p>
+                        </div>
+                        <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-600 shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
                     </div>
-                    {% if filho.filhos.exists %}
-                    <span class="text-xs text-blue-600">+{{ filho.filhos.count }} filhos</span>
-                    {% endif %}
+                </a>
+            </div>
+            {% endif %}
+
+            <!-- Children fundamentos -->
+            {% if filhos %}
+            <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-semibold flex items-center gap-2">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                        </svg>
+                        Fundamentos Filhos
+                    </h3>
+                    <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                        {{ filhos.count }} {% if filhos.count == 1 %}item{% else %}itens{% endif %}
+                    </span>
                 </div>
-            </a>
-            {% endfor %}
+                <div class="space-y-2">
+                    {% for filho in filhos %}
+                    <a href="{% url 'fundamentos:detalhe' filho.seq %}"
+                        class="block p-4 bg-gray-50 rounded-lg hover:bg-blue-50 hover:border-blue-300 border border-gray-200 transition group">
+                        <div class="flex items-start justify-between gap-4">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="font-mono text-xs text-gray-500 bg-white px-2 py-1 rounded">
+                                        {{ filho.seq }}
+                                    </span>
+                                    {% if filho.filhos.exists %}
+                                    <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full">
+                                        +{{ filho.filhos.count }} filhos
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                <p class="font-medium text-gray-900 group-hover:text-blue-700 leading-snug">
+                                    {{ filho.descricao }}
+                                </p>
+                            </div>
+                            <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-600 shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
         </div>
+
+        <!-- Sidebar -->
+        <aside class="space-y-6">
+            <!-- Quick actions -->
+            <div class="bg-white rounded-xl shadow p-5 border border-gray-100 sticky top-24">
+                <h3 class="font-semibold mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    Ações Rápidas
+                </h3>
+                <div class="space-y-2">
+                    <a href="{% url 'fundamentos:index' %}"
+                        class="block px-4 py-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition text-sm flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        Nova Busca
+                    </a>
+                    <a href="{% url 'fundamentos:arvore' %}"
+                        class="block px-4 py-3 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition text-sm flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                        </svg>
+                        Ver Árvore
+                    </a>
+                    <button @click="compartilhar"
+                        class="w-full px-4 py-3 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition text-sm flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+                        </svg>
+                        Compartilhar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Info panel -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm">
+                <div class="flex items-start gap-3">
+                    <svg class="w-5 h-5 text-blue-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div>
+                        <p class="font-medium text-blue-900 mb-2">Dicas</p>
+                        <ul class="space-y-1 text-blue-800">
+                            <li>Clique nos fundamentos pai ou filhos para navegar</li>
+                            <li>Use o botão "Compartilhar" para enviar o link</li>
+                            <li>Exporte para JSON para integração com outros sistemas</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </aside>
     </div>
-    {% endif %}
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function detalheApp() {
+    return {
+        feedback: '',
+
+        async copiarSEQ() {
+            const seq = '{{ fundamento.seq }}';
+            try {
+                await navigator.clipboard.writeText(seq);
+                this.showFeedback('SEQ copiado!');
+            } catch (error) {
+                console.warn('Clipboard indisponível', error);
+                this.showFeedback('SEQ: ' + seq);
+            }
+        },
+
+        async copiarLink() {
+            const link = window.location.href;
+            try {
+                await navigator.clipboard.writeText(link);
+                this.showFeedback('Link copiado para a área de transferência!');
+            } catch (error) {
+                console.warn('Clipboard indisponível', error);
+                this.showFeedback('Link: ' + link);
+            }
+        },
+
+        async exportarJSON() {
+            const seq = '{{ fundamento.seq }}';
+            try {
+                const response = await fetch('/api/fundamentos/' + seq + '/');
+                const data = await response.json();
+
+                const json = JSON.stringify(data, null, 2);
+                const blob = new Blob([json], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `fundamento_${seq}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                this.showFeedback('JSON exportado com sucesso!');
+            } catch (error) {
+                console.error('Erro ao exportar JSON:', error);
+                this.showFeedback('Erro ao exportar JSON');
+            }
+        },
+
+        imprimir() {
+            window.print();
+        },
+
+        async compartilhar() {
+            const dados = {
+                title: '{{ fundamento.descricao|escapejs }}',
+                text: 'Fundamento Legal - STJ',
+                url: window.location.href
+            };
+
+            if (navigator.share) {
+                try {
+                    await navigator.share(dados);
+                    this.showFeedback('Compartilhado com sucesso!');
+                } catch (error) {
+                    if (error.name !== 'AbortError') {
+                        this.copiarLink();
+                    }
+                }
+            } else {
+                this.copiarLink();
+            }
+        },
+
+        showFeedback(message) {
+            this.feedback = message;
+            setTimeout(() => this.feedback = '', 3000);
+        }
+    };
+}
+</script>
 {% endblock %}
